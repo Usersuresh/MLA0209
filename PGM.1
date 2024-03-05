@@ -1,0 +1,23 @@
+def find_s_algorithm(training_data):
+    hypothesis = training_data[0][:-1]  # Initialize hypothesis with first training example
+    
+    for instance in training_data:
+        if instance[-1] == 'Yes':  # Positive example
+            for i in range(len(hypothesis)):
+                if hypothesis[i] != instance[i]:
+                    hypothesis[i] = '?'  # Generalize to '?' if attribute values don't match
+        # Ignore negative examples, as FIND-S algorithm only considers positive examples
+    
+    return hypothesis
+
+# Example training data (each row is an example, with the last column representing the target concept)
+training_data = [
+    ['Sunny', 'Warm', 'Normal', 'Strong', 'Warm', 'Same', 'Yes'],
+    ['Sunny', 'Warm', 'High', 'Strong', 'Warm', 'Same', 'Yes'],
+    ['Rainy', 'Cold', 'High', 'Strong', 'Warm', 'Change', 'No'],
+    ['Sunny', 'Warm', 'High', 'Strong', 'Cool', 'Change', 'Yes']
+]
+
+# Apply FIND-S algorithm
+specific_hypothesis = find_s_algorithm(training_data)
+print("The most specific hypothesis:", specific_hypothesis)
