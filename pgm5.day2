@@ -1,0 +1,54 @@
+import numpy as np
+
+def normal_pdf(x, mean, variance):
+    return 1 / np.sqrt(2 * np.pi * variance) * np.exp(-((x - mean) ** 2) / (2 * variance))
+
+def expectation_step(X, means, variances, weights):
+    num_samples = len(X)
+    num_components = len(means)
+    responsibilities = np.zeros((num_samples, num_components))
+    for i in range(num_samples):
+        for k in range(num_components):
+            responsibilities[i, k] = weights[k] * normal_pdf(X[i], means[k], variances[k])
+        responsibilities[i] /= np.sum(responsibilities[i])
+    return responsibilities
+
+def maximization_step(X, responsibilities):
+    num_samples, num_components = responsibilities.shape
+    means = np.zeros(num_components)
+    variances = np.zeros(num_components)
+    weights = np.zeros(num_components)
+    for k in range(num_components):
+        weights[k] = np.sum(responsibilities[:, k]) / num_samples
+        means[k] = np.sum(responsibilities[:, k] * X) / np.sum(responsibilities[:, k])
+        variances[k] = np.sum(responsibilities[:, k] * (X - means[k]) ** 2) / np.sum(responsibilities[:, k])
+    return means, variances, weights
+
+def em_algorithm(X, num_components, max_iters=100, tol=1e-6):
+    # Initialize parameters randomly
+    np.random.seed(0)
+    means = np.random.rand(num_components) * np.max(X)
+    variances = np.random.rand(num_components) * np.var(X)
+    weights = np.ones(num_components) / num_components
+    
+    prev_likelihood = float('-inf')
+    for _ in range(max_iters):
+        responsibilities = expectation_step(X, means, variances, weights)
+        means, variances, weights = maximization_step(X, responsibilities)
+        
+        # Calculate log-likelihood
+        likelihood = np.sum(np.log(np.sum(weights[k] * normal_pdf(X, means[k], variances[k]) for k in range(num_components))))
+        
+        # Check for convergence
+        if np.abs(likelihood - prev_likelihood) < tol:
+            break
+        prev_likelihood = likelihood
+    
+    return means, variances, weights
+
+# Example usage
+X = np.concatenate([np.random.normal(0, 1, 100), np.random.normal(5, 1, 100)])
+means, variances, weights = em_algorithm(X, num_components=2)
+print("Means:", means)
+print("Variances:", variances)
+print("Weights:", weights)
