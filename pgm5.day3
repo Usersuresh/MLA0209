@@ -1,0 +1,32 @@
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import accuracy_score, classification_report
+
+# Step 1: Load the Iris dataset
+iris = load_iris()
+X = iris.data
+y = iris.target
+
+# Step 2: Split the dataset into features (X) and labels (y)
+# Already done in step 1
+
+# Step 3: Split Data into Training and Testing Sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Step 4: Train the Naive Bayes Classifier
+nb_classifier = GaussianNB()
+nb_classifier.fit(X_train, y_train)
+
+# Step 5: Evaluate the Model
+y_pred = nb_classifier.predict(X_test)
+accuracy = accuracy_score(y_test, y_pred)
+print("Accuracy:", accuracy)
+print("Classification Report:")
+print(classification_report(y_test, y_pred))
+
+# Step 6: Fine-tuning (Optional)
+# No hyperparameters to tune for GaussianNB
+
+# Step 7: Prediction (Optional)
+# You can use the trained model to make predictions on new data if available
