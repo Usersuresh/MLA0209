@@ -1,0 +1,73 @@
+# Import necessary libraries
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
+from sklearn.metrics import roc_curve, roc_auc_score
+import matplotlib.pyplot as plt
+
+# Load the Iris dataset
+from sklearn.datasets import load_iris
+iris = load_iris()
+X = iris.data
+y = iris.target
+
+# Split the dataset into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Standardize features
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# Define a dictionary to hold the classifiers
+classifiers = {
+    "Logistic Regression": LogisticRegression(),
+    "Decision Tree": DecisionTreeClassifier(),
+    "Random Forest": RandomForestClassifier(),
+    "SVM": SVC(),
+    "k-Nearest Neighbors": KNeighborsClassifier(),
+    "Naive Bayes": GaussianNB()
+}
+
+# Train and evaluate each classifier
+results = {}
+for name, clf in classifiers.items():
+    clf.fit(X_train, y_train)
+    y_pred = clf.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
+    precision = precision_score(y_test, y_pred, average='weighted')
+    recall = recall_score(y_test, y_pred, average='weighted')
+    f1 = f1_score(y_test, y_pred, average='weighted')
+    results[name] = {"Accuracy": accuracy, "Precision": precision, "Recall": recall, "F1-score": f1}
+
+# Print the results
+print("\nPerformance Metrics:")
+print("====================")
+print("{:<20} {:<10} {:<10} {:<10} {:<10}".format("Classifier", "Accuracy", "Precision", "Recall", "F1-score"))
+for name, metrics in results.items():
+    print("{:<20} {:<10.2f} {:<10.2f} {:<10.2f} {:<10.2f}".format(name, metrics["Accuracy"], metrics["Precision"], metrics["Recall"], metrics["F1-score"]))
+
+# Plot ROC curve for classifiers supporting predict_proba
+plt.figure(figsize=(10, 6))
+for name, clf in classifiers.items():
+    if hasattr(clf, "predict_proba"):
+        y_prob = clf.predict_proba(X_test)[:, 1]
+        fpr, tpr, _ = roc_curve(y_test, y_prob, pos_label=1)
+        auc = roc_auc_score(y_test, y_prob)
+        plt.plot(fpr, tpr, label=name + " (AUC = {:.2f})".format(auc))
+
+plt.plot([0, 1], [0, 1], linestyle='--', color='gray')
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('ROC Curve')
+plt.legend(loc='lower right')
+plt.grid(True)
+plt.show()
