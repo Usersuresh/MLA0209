@@ -1,0 +1,55 @@
+import pandas as pd
+
+def initialize_hypotheses(num_attributes):
+    hypotheses = []
+    for i in range(num_attributes):
+        hypotheses.append(['?', '?'])
+    return hypotheses
+
+def consistent_with_instance(hypothesis, instance):
+    for i in range(len(hypothesis)):
+        if hypothesis[i] != '?' and hypothesis[i] != instance[i]:
+            return False
+    return True
+
+def candidate_elimination_algorithm(training_data):
+    num_attributes = len(training_data.columns) - 1
+    S = initialize_hypotheses(num_attributes)
+    G = initialize_hypotheses(num_attributes)
+    
+    for index, instance in training_data.iterrows():
+        if instance.iloc[-1] == 'Yes':
+            for i in range(num_attributes):
+                if S[i][0] == '?':
+                    S[i][0] = instance[i]
+                elif S[i][0] != instance[i]:
+                    S[i][0] = '?'
+                    S[i][1] = instance[i]
+                    
+            for i in range(num_attributes):
+                for g in G:
+                    if g[i] != '?' and g[i] != instance[i]:
+                        G.remove(g)
+                        break
+        else:
+            for i in range(num_attributes):
+                if instance[i] != S[i][0]:
+                    G[i][0] = S[i][0]
+    
+    return S, G
+
+# Load training data from CSV file
+file_path = 'training_data.csv'
+training_data = pd.read_csv(file_path)
+
+# Apply Candidate-Elimination algorithm
+S_hypotheses, G_hypotheses = candidate_elimination_algorithm(training_data)
+
+# Output the set of all hypotheses consistent with the training examples
+print("The set of all hypotheses consistent with the training examples:")
+print("S Hypotheses:")
+for h in S_hypotheses:
+    print(h)
+print("\nG Hypotheses:")
+for h in G_hypotheses:
+    print(h)
